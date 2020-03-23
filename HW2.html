@@ -114,18 +114,7 @@ class pucks{
   setnpuck(puck){
     this.puck = puck;
   }
-  //pucklight = new THREE.PointLight( 0x5cf2f2, 1,100);
-  //scene.add( pucklight );
-  /*
-  puck = new THREE.Mesh (new THREE.CylinderGeometry (15,15,4,20), new THREE.MeshBasicMaterial({color:0x5cf2f2}));
-  scene.add (puck)
-  puck.position.y = 2;
-  */
-  /*
-  force = new THREE.Vector3(0,0,0);
-  vel = new THREE.Vector3(5, 0, 3);
-  pos = new THREE.Vector3(50,0,0);
-  */
+
 }
 
 
@@ -146,12 +135,6 @@ function init() {
   camera.position.z = 500;
   let controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-  pucklight = new THREE.PointLight( 0x5cf2f2, 1,100);
-  pucklight2 = new THREE.PointLight( 0xa83232, 1,100);
-
-//light.position.set( 50, 50, 50 );
-scene.add( pucklight );
-scene.add( pucklight2 );
 
 var light = new THREE.AmbientLight( 0x202020 ); // soft white light
 scene.add( light );
@@ -163,15 +146,6 @@ scene.add( light );
   var floor = new THREE.Mesh (new THREE.PlaneGeometry(200,200), new THREE.MeshPhongMaterial());
   scene.add (floor);
   floor.rotation.x = -Math.PI/2;
-  /// puck
-
- /* puck = new THREE.Mesh (new THREE.CylinderGeometry (15,15,4,20), new THREE.MeshBasicMaterial({color:0x5cf2f2}));
-  scene.add (puck)
-  puck.position.y = 2;
-  
-  puck2 = new THREE.Mesh (new THREE.CylinderGeometry (15,15,4,20), new THREE.MeshBasicMaterial({color:0xa83232}));
-  scene.add (puck2)
-  puck2.position.y = 2;*/
   
 
   
@@ -218,16 +192,7 @@ scene.add( light );
   walls[3].makerotation();
   
 
-  //////////////////
-  /*
-  force = new THREE.Vector3(0,0,0);
-  vel = new THREE.Vector3(5, 0, 3);
-  pos = new THREE.Vector3(50,0,0);
 
-  force2 = new THREE.Vector3(0,0,0);
-  vel2 = new THREE.Vector3(-5, 0, 5);
-  pos2 = new THREE.Vector3(-50,0,0);
-  */
 }
 
 function animate() {
@@ -265,14 +230,20 @@ function animate() {
     // collision detection
 
     for (i = 0; i < 4; i++) {
-      //let wall = walls[i].getwall();
-    if (pos.clone().sub (walls[i].getpoint()).dot (walls[i].getnormal()) < eps + 15) {
-      pos.x = pos.x-vel.x*0.01;
-      pos.z = pos.z-vel.z*0.01;
-      var vN = walls[i].getnormal().clone().multiplyScalar(vel.dot (walls[i].getnormal()));
+      var wall = walls[i].getwall();
+      var point = walls[i].getpoint();
+      var normal = walls[i].getnormal();
+    if (pos.clone().sub (wall.point).dot (wall.normal) < eps + 15) {
+      
+      var tmp = 15-(pos.clone().sub(wall.point)).dot(wall.normal);
+      pos = pos.clone().add (wall.normal.clone().multiplyScalar(tmp))
+      
+      var vN = wall.normal.clone().multiplyScalar(vel.dot (wall.normal));
       var vT = vel.clone().sub(vN);
       // vel = vT + (- CR).vN
       vel.copy (vT.add (vN.multiplyScalar(-cR) ));
+      pucks[j].setnvel(vel);
+      pucks[j].setnpos(pos);
     }
 
     }
@@ -292,10 +263,23 @@ function animate() {
         var Vnz = vel.z-((vel.x-vel2.x)*(pos.x-pos2.x)+(vel.z-vel2.z)*(pos.z-pos2.z))/((pos.x-pos2.x)*(pos.x-pos2.x)+(pos.z-pos2.z)*(pos.z-pos2.z))*(pos.z-pos2.z);
         var Vn2x = vel2.x-((vel2.x-vel.x)*(pos2.x-pos.x)+(vel2.z-vel.z)*(pos2.z-pos.z))/((pos2.x-pos.x)*(pos2.x-pos.x)+(pos2.z-pos.z)*(pos2.z-pos.z))*(pos2.x-pos.x);
         var Vn2z = vel2.z-((vel2.x-vel.x)*(pos2.x-pos.x)+(vel2.z-vel.z)*(pos2.z-pos.z))/((pos2.x-pos.x)*(pos2.x-pos.x)+(pos2.z-pos.z)*(pos2.z-pos.z))*(pos2.z-pos.z);
-        pos.x = pos.x-vel.x*0.01;
-        pos2.x = pos2.x-vel2.x*0.01;
-        pos.z = pos.z-vel.z*0.01;
-        pos2.z = pos2.z-vel2.z*0.01;
+
+
+        var m1 = Math.sqrt((pos2.x-pos.x)*(pos2.x-pos.x)+(pos2.y-pos.y)*(pos2.y-pos.y)+(pos2.z-pos.z)*(pos2.z-pos.z))
+
+
+        var t1 = (pos2.clone().sub(pos.clone())).multiplyScalar(1/m1);
+        /*console.log('pos.x = '+pos.x+' pos.y = '+pos.y+ ' pos.z =  '+pos.z);
+        console.log('pos2.x = '+pos2.x+' pos2.y = '+pos2.y+ ' pos2.z =  '+pos2.z);*/
+
+        
+        var d1 = 30 - Math.abs(m1);
+        pos = pos.clone().sub(t1.clone().multiplyScalar(d1/2));
+        pos2 = pos2.clone().add(t1.multiplyScalar(d1/2));
+        /*console.log('pos.x = '+pos.x+' pos.y = '+pos.y+ ' pos.z =  '+pos.z);
+        console.log('pos2.x = '+pos2.x+' pos2.y = '+pos2.y+ ' pos2.z =  '+pos2.z);*/
+        
+        
         vel.x = Vnx;
         vel.z = Vnz;
         vel2.x = Vn2x;
