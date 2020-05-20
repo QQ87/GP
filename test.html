@@ -23,7 +23,7 @@ var smoothedControls, markerRoot, smoothedRoot;
 class Obstacle {
 	constructor (center,size) {
 		this.center = center.clone();  
-		this.mesh = new THREE.Mesh (new THREE.CylinderGeometry(size,size,1,20),
+		this.mesh = new THREE.Mesh (new THREE.CylinderGeometry(size/100,size/100,1/100,20/100),
 			new THREE.MeshBasicMaterial());
 		this.mesh.position.copy (center);
 		this.size = size;
@@ -38,10 +38,10 @@ class Agent {
     this.vel = new THREE.Vector3();
     this.force = new THREE.Vector3();
     this.target = new THREE.Vector3();
-    this.size = 3;  // half width
+    this.size = 3/100;  // half width
     this.mesh = mesh;
     this.MAXSPEED = 75;
-    this.ARRIVAL_R = 30;
+    this.ARRIVAL_R = 30/100;
     //this.nbhd = [];
     
     // for orientable agent
@@ -55,7 +55,7 @@ class Agent {
 	let vhat = this.vel.clone().normalize();
 	let point = ob.center.clone().sub (this.pos) // c-p
 	let proj  = point.dot(vhat);
-const REACH = 50
+const REACH = 50/100
 const K = 7
 	if (proj > 0 && proj < REACH) {
 		let perp = new THREE.Vector3();
@@ -85,7 +85,7 @@ const K = 7
     
     // for orientable agent
     // non PD version
-    if (this.vel.length() > 0.1) {
+    if (this.vel.length() > 0.1/100) {
 	    	this.angle = Math.atan2 (-this.vel.z, this.vel.x)
     		this.mesh.rotation.y = this.angle
    	}
@@ -120,9 +120,9 @@ const K = 7
   	return proj;
   }
   randomtarget(){
-	if((agent.target.clone().sub(agent.pos)).length() < 1){
-  	 tarx = Math.random()*240-120;
-  	 tary = Math.random()*240-120;
+	if((agent.target.clone().sub(agent.pos)).length() < 1/100){
+  	 tarx = (Math.random()*240-120)/100;
+  	 tary = (Math.random()*240-120)/100;
   	 var vectar = new THREE.Vector3( tarx, 0, tary );
   	 for(i = 0 ; i < obsize ; i++){
   	 		ob = obs[i];
@@ -131,7 +131,7 @@ const K = 7
   	    }
   	    else if(i == obsize - 1){
   	    	target.position.copy(vectar);
-  	 			target.position.y = 0.15;
+  	 			target.position.y = 0.15/100;
   	 			agent.setTarget(vectar);
   	    }
   	 }
@@ -166,10 +166,10 @@ class Agent2 {
     this.vel = new THREE.Vector3();
     this.force = new THREE.Vector3();
     this.target = new THREE.Vector3();
-    this.size = 3;  // half width
+    this.size = 3/100;  // half width
     this.mesh = mesh;
     this.MAXSPEED = 50;
-    this.ARRIVAL_R = 30;
+    this.ARRIVAL_R = 30/100;
     //this.nbhd = [];
     
     // for orientable agent
@@ -183,7 +183,7 @@ class Agent2 {
 	let vhat = this.vel.clone().normalize();
 	let point = ob2.center.clone().sub (this.pos) // c-p
 	let proj  = point.dot(vhat);
-const REACH = 50
+const REACH = 50/100
 const K = 7
 	if (proj > 0 && proj < REACH) {
 		let perp = new THREE.Vector3();
@@ -213,7 +213,7 @@ const K = 7
     
     // for orientable agent
     // non PD version
-    if (this.vel.length() > 0.1) {
+    if (this.vel.length() > 0.1/100) {
 	    	this.angle = Math.atan2 (-this.vel.z, this.vel.x)
     		this.mesh.rotation.y = this.angle
    	}
@@ -249,8 +249,8 @@ const K = 7
   }
   randomtarget(){
 	if((agent2.target.clone().sub(agent2.pos)).length() < 1){
-  	 tarx2 = Math.random()*240-120;
-  	 tary2 = Math.random()*240-120;
+  	 tarx2 = (Math.random()*240-120)/100;
+  	 tary2 = (Math.random()*240-120)/100;
   	 var vectar = new THREE.Vector3( tarx2, 0, tary2 );
   	 for(i = 0 ; i < obsize ; i++){
   	 		ob2 = obs[i];
@@ -259,7 +259,7 @@ const K = 7
   	    }
   	    else if(i == obsize - 1){
   	    	target2.position.copy(vectar);
-  	 			target2.position.y = 0.15;
+  	 			target2.position.y = 0.15/100;
   	 			agent2.setTarget(vectar);
   	    }
   	 }
@@ -297,8 +297,8 @@ var obs = [];
 var ob, ob2;
 var obsize = 0;
 var i;
-var tarx = 50 ,tary = 10;
-var tarx2 = 50 ,tary2 = 10;
+var tarx = 50/100 ,tary = 10/100;
+var tarx2 = 50/100 ,tary2 = 10/100;
 
 
 init();
@@ -315,10 +315,10 @@ function onResize(){
 function agentMesh () {
 	// mesh facing +x
 	let geometry = new THREE.Geometry();
-  geometry.vertices.push (new THREE.Vector3(10,0,0))
-  geometry.vertices.push (new THREE.Vector3(0,0,-3))
-  geometry.vertices.push (new THREE.Vector3(0,0,3))
-  geometry.vertices.push (new THREE.Vector3(0,3,0))
+  geometry.vertices.push (new THREE.Vector3(10/100,0,0))
+  geometry.vertices.push (new THREE.Vector3(0,0,-3/100))
+  geometry.vertices.push (new THREE.Vector3(0,0,3/100))
+  geometry.vertices.push (new THREE.Vector3(0,3/100,0))
   
   geometry.faces.push(new THREE.Face3(0, 3, 2));
   geometry.faces.push(new THREE.Face3(0, 2, 1));
@@ -333,10 +333,10 @@ function agentMesh () {
 function agentMesh2 () {
 	// mesh facing +x
 	let geometry = new THREE.Geometry();
-  geometry.vertices.push (new THREE.Vector3(10,0,0))
-  geometry.vertices.push (new THREE.Vector3(0,0,-3))
-  geometry.vertices.push (new THREE.Vector3(0,0,3))
-  geometry.vertices.push (new THREE.Vector3(0,3,0))
+  geometry.vertices.push (new THREE.Vector3(10/100,0,0))
+  geometry.vertices.push (new THREE.Vector3(0,0,-3/100))
+  geometry.vertices.push (new THREE.Vector3(0,0,3/100))
+  geometry.vertices.push (new THREE.Vector3(0,3/100,0))
   
   geometry.faces.push(new THREE.Face3(0, 3, 2));
   geometry.faces.push(new THREE.Face3(0, 2, 1));
@@ -466,7 +466,7 @@ function init() {
 	stats = new Stats();
 	document.body.appendChild( stats.dom );*/
   
-  plane = new THREE.Mesh(new THREE.PlaneGeometry(240, 240), new THREE.MeshBasicMaterial({
+  plane = new THREE.Mesh(new THREE.PlaneGeometry(240/100, 240/100), new THREE.MeshBasicMaterial({
     transparent: true,
     opacity: 0.5,
     visible: true
@@ -476,7 +476,7 @@ function init() {
   let loader = new THREE.TextureLoader();
   loader.crossOrigin = ""
   let tex = loader.load ("https://i.imgur.com/GmthNU8.png");
-  target = new THREE.Mesh(new THREE.CircleGeometry(10,20), new THREE.MeshBasicMaterial({
+  target = new THREE.Mesh(new THREE.CircleGeometry(10/100,20/100), new THREE.MeshBasicMaterial({
     map: tex,
     transparent:true
 	 }));
@@ -484,7 +484,7 @@ function init() {
   target.rotation.x = -Math.PI/2
 
   
-  target2 = new THREE.Mesh(new THREE.CircleGeometry(10,20), new THREE.MeshBasicMaterial({
+  target2 = new THREE.Mesh(new THREE.CircleGeometry(10/100,20/100), new THREE.MeshBasicMaterial({
     map: tex,
     transparent:true
 	 }));
@@ -499,11 +499,11 @@ function init() {
   document.addEventListener('mousedown', onDocumentMouseDown, false);
   ////////////////////////
 		let mesh = agentMesh ();
-    agent = new Agent(new THREE.Vector3(-100 + 200 * Math.random(), 0, -100 + 200 * Math.random()), mesh);
+    agent = new Agent(new THREE.Vector3((-100 + 200 * Math.random())/100, 0, (-100 + 200 * Math.random()))/100, mesh);
     scene.add(mesh)
     
   	let mesh2 = agentMesh2 ();
-    agent2 = new Agent2(new THREE.Vector3(-100 + 200 * Math.random(), 0, -100 + 200 * Math.random()), mesh2);
+    agent2 = new Agent2(new THREE.Vector3((-100 + 200 * Math.random())/100, 0, (-100 + 200 * Math.random()), mesh2)/100);
     scene.add(mesh2)
 //    pdControl = new PDControllerR2();
 
@@ -515,7 +515,7 @@ function init() {
   
 }
 
-function onDocumentMouseDown(event) {
+/*function onDocumentMouseDown(event) {
 
   event.preventDefault();
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -526,15 +526,15 @@ function onDocumentMouseDown(event) {
   var intersects = raycaster.intersectObjects(pickables);
   if (intersects.length > 0) {
     target.position.copy(intersects[0].point);
-    target.position.y = 0.15
+    target.position.y = 0.15/100
     agent.setTarget(intersects[0].point)
     
     target2.position.copy(intersects[0].point);
-    target2.position.y = 0.15
+    target2.position.y = 0.15/100
     agent2.setTarget(intersects[0].point)
   }
 
-}
+}*/
 
 
 
