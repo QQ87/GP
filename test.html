@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+<!-- three.js library -->
+<script src="https://qq87.github.io/GP/arneeded/three.min.js"></script>
+<script src="https://qq87.github.io/GP/arneeded/stats.min.js"></script>
+<!-- ar.js -->
+<script src="https://qq87.github.io/GP/arneeded/ar.js"></script>
+<script>THREEx.ArToolkitContext.baseURL = 'https://QQ87.github.io/'</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/107/three.min.js"></script>
+<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+
+<body style='margin : 0px; overflow: hidden; font-family: Monospace;'><div style='position: absolute; top: 10px; width:100%; text-align: center; z-index: 1;'>
+	<a href="https://github.com/jeromeetienne/AR.js/" target="_blank">AR.js</a> - three.js mobile performance
+	<br/>
+	init-animate format<br>
+	smoothed control
+</div><script>
+var renderer, scene, camera, stats;
+var arToolkitSource, arToolkitContext;
+var smoothedControls, markerRoot, smoothedRoot;
+
+class Obstacle {
+	constructor (center,size) {
+		this.center = center.clone();  
+		this.mesh = new THREE.Mesh (new THREE.CylinderGeometry(size,size,1,20),
+			new THREE.MeshBasicMaterial());
+		this.mesh.position.copy (center);
+		this.size = size;
+    scene.add (this.mesh)
+	}
+  
+}
+
+class Agent {
+  constructor(pos, mesh) {
+    this.pos = pos.clone();
+    this.vel = new THREE.Vector3();
+    this.force = new THREE.Vector3();
+    this.target = new THREE.Vector3();
+    this.size = 3;  // half width
+    this.mesh = mesh;
+    this.MAXSPEED = 75;
+    this.ARRIVAL_R = 30;
+    //this.nbhd = [];
+    
+    // for orientable agent
+    this.angle = 0;
+  }
+  update(dt) {
+    this.accumulateForce();
+//    this.vel.add(this.force.clone().multiplyScalar(dt));
+    
+	// collision
+	let vhat = this.vel.clone().normalize();
+	let point = ob.center.clone().sub (this.pos) // c-p
+	let proj  = point.dot(vhat);
+const REACH = 50
+const K = 7
+	if (proj > 0 && proj < REACH) {
+		let perp = new THREE.Vector3();
+		perp.subVectors (point, vhat.clone().setLength(proj));
+		let overlap = ob.size + this.size - perp.length()
+    if (overlap > 0) {
+			perp.setLength (K*overlap);
+			perp.negate()
+      this.force.add (perp);
+			console.log ("hit:", perp);
+		}
+	}
+  
+  this.vel.add(this.force.clone().multiplyScalar(dt));
+
+    
+    // velocity modulation
+    let diff = this.target.clone().sub(this.pos)
+    let dst = diff.length();
+    if (dst < this.ARRIVAL_R) {
+      this.vel.setLength(dst)
+    }
+    
+    
+    this.pos.add(this.vel.clone().multiplyScalar(dt))
+    this.mesh.position.copy(this.pos)
+    
+    // for orientable agent
+    // non PD version
+    if (this.vel.length() > 0.1) {
+	    	this.angle = Math.atan2 (-this.vel.z, this.vel.x)
+    		this.mesh.rotation.y = this.angle
+   	}
+  }
+
+  setTarget(target) {
+    this.target.copy(target)
+  }
+  targetInducedForce(targetPos) {
+    return targetPos.clone().sub(this.pos).normalize().multiplyScalar(this.MAXSPEED).sub(this.vel)
+  }
+
+  accumulateForce() {
+    // seek
+    this.force.copy(this.targetInducedForce(this.target));
+  }
+  
+  getoverlap(){
+  	let vhat = this.vel.clone().normalize();
+		let point = ob.center.clone().sub (this.pos) // c-p
+		let proj  = point.dot(vhat);
+  	let perp = new THREE.Vector3();
+		perp.subVectors (point, vhat.clone().setLength(proj));
+		let overlap = ob.size + this.size - perp.length()
+    //console.log('returm!');
+  	return overlap;
+  }
+  getproj(){
+  	let vhat = this.vel.clone().normalize();
+		let point = ob.center.clone().sub (this.pos) // c-p
+		let proj  = point.dot(vhat);
+  	return proj;
+  }
+  randomtarget(){
+	if((agent.target.clone().sub(agent.pos)).length() < 1){
+  	 tarx = Math.random()*240-120;
+  	 tary = Math.random()*240-120;
+  	 var vectar = new THREE.Vector3( tarx, 0, tary );
+  	 for(i = 0 ; i < obsize ; i++){
+  	 		ob = obs[i];
+  	 		if(ob.center.clone().sub(vectar).length() < ob.size + agent.size){
+  	    	break;
+  	    }
+  	    else if(i == obsize - 1){
+  	    	target.position.copy(vectar);
+  	 			target.position.y = 0.15;
+  	 			agent.setTarget(vectar);
+  	    }
+  	 }
+   
+ 		}	
+  }
+  
+  mostthread(){
+  var obtarget, obtargetproj = 0;
+   for(i = 0, obtarget = -1 ; i < obsize ; i++ ){
+      ob = obs[i];
+        if(agent.getoverlap() > 0){
+          if(obtarget == -1){
+            obtarget = i;
+            obtargetproj = agent.getproj();
+          }
+          else if(obtargetproj > agent.getproj()){
+            obtargetproj = agent.getproj();
+            obtarget = i;
+          }
+        }
+
+   }
+   //console.log(''+obtarget);
+   if(obtarget >= 0 && obtarget < obsize) ob = obs[obtarget];
+  }
+}
+
+class Agent2 {
+  constructor(pos, mesh) {
+    this.pos = pos.clone();
+    this.vel = new THREE.Vector3();
+    this.force = new THREE.Vector3();
+    this.target = new THREE.Vector3();
+    this.size = 3;  // half width
+    this.mesh = mesh;
+    this.MAXSPEED = 50;
+    this.ARRIVAL_R = 30;
+    //this.nbhd = [];
+    
+    // for orientable agent
+    this.angle = 0;
+  }
+  update(dt) {
+    this.accumulateForce();
+//    this.vel.add(this.force.clone().multiplyScalar(dt));
+    
+	// collision
+	let vhat = this.vel.clone().normalize();
+	let point = ob2.center.clone().sub (this.pos) // c-p
+	let proj  = point.dot(vhat);
+const REACH = 50
+const K = 7
+	if (proj > 0 && proj < REACH) {
+		let perp = new THREE.Vector3();
+		perp.subVectors (point, vhat.clone().setLength(proj));
+		let overlap = ob2.size + this.size - perp.length()
+    if (overlap > 0) {
+			perp.setLength (K*overlap);
+			perp.negate()
+      this.force.add (perp);
+			console.log ("hit:", perp);
+		}
+	}
+  
+  this.vel.add(this.force.clone().multiplyScalar(dt));
+
+    
+    // velocity modulation
+    let diff = this.target.clone().sub(this.pos)
+    let dst = diff.length();
+    if (dst < this.ARRIVAL_R) {
+      this.vel.setLength(dst)
+    }
+    
+    
+    this.pos.add(this.vel.clone().multiplyScalar(dt))
+    this.mesh.position.copy(this.pos)
+    
+    // for orientable agent
+    // non PD version
+    if (this.vel.length() > 0.1) {
+	    	this.angle = Math.atan2 (-this.vel.z, this.vel.x)
+    		this.mesh.rotation.y = this.angle
+   	}
+  }
+
+  setTarget(target) {
+    this.target.copy(target)
+  }
+  targetInducedForce(targetPos) {
+    return targetPos.clone().sub(this.pos).normalize().multiplyScalar(this.MAXSPEED).sub(this.vel)
+  }
+
+  accumulateForce() {
+    // seek
+    this.force.copy(this.targetInducedForce(this.target));
+  }
+  
+  getoverlap(){
+  	let vhat = this.vel.clone().normalize();
+		let point = ob2.center.clone().sub (this.pos) // c-p
+		let proj  = point.dot(vhat);
+  	let perp = new THREE.Vector3();
+		perp.subVectors (point, vhat.clone().setLength(proj));
+		let overlap = ob2.size + this.size - perp.length()
+    //console.log('returm!');
+  	return overlap;
+  }
+  getproj(){
+  	let vhat = this.vel.clone().normalize();
+		let point = ob2.center.clone().sub (this.pos) // c-p
+		let proj  = point.dot(vhat);
+  	return proj;
+  }
+  randomtarget(){
+	if((agent2.target.clone().sub(agent2.pos)).length() < 1){
+  	 tarx2 = Math.random()*240-120;
+  	 tary2 = Math.random()*240-120;
+  	 var vectar = new THREE.Vector3( tarx2, 0, tary2 );
+  	 for(i = 0 ; i < obsize ; i++){
+  	 		ob2 = obs[i];
+  	 		if(ob2.center.clone().sub(vectar).length() < ob2.size + agent2.size){
+  	    	break;
+  	    }
+  	    else if(i == obsize - 1){
+  	    	target2.position.copy(vectar);
+  	 			target2.position.y = 0.15;
+  	 			agent2.setTarget(vectar);
+  	    }
+  	 }
+   
+ 		}	
+  }
+  
+  mostthread(){
+  var obtarget, obtargetproj = 0;
+   for(i = 0, obtarget = -1 ; i < obsize ; i++ ){
+      ob2 = obs[i];
+        if(agent2.getoverlap() > 0){
+          if(obtarget == -1){
+            obtarget = i;
+            obtargetproj = agent2.getproj();
+          }
+          else if(obtargetproj > agent2.getproj()){
+            obtargetproj = agent2.getproj();
+            obtarget = i;
+          }
+        }
+
+   }
+   //console.log(''+obtarget);
+   if(obtarget >= 0 && obtarget < obsize) ob2 = obs[obtarget];
+  }
+}
+
+var camera, scene, renderer;
+var puck;
+var raycaster;
+var mouse = new THREE.Vector2();
+var pickables = [];
+var obs = [];
+var ob, ob2;
+var obsize = 0;
+var i;
+var tarx = 50 ,tary = 10;
+var tarx2 = 50 ,tary2 = 10;
+
+
+init();
+animate();
+
+function onResize(){
+	arToolkitSource.onResize()	
+	arToolkitSource.copySizeTo(renderer.domElement)	
+	if( arToolkitContext.arController !== null ){
+		arToolkitSource.copySizeTo(arToolkitContext.arController.canvas)	
+	}	
+}
+
+function agentMesh () {
+	// mesh facing +x
+	let geometry = new THREE.Geometry();
+  geometry.vertices.push (new THREE.Vector3(10,0,0))
+  geometry.vertices.push (new THREE.Vector3(0,0,-3))
+  geometry.vertices.push (new THREE.Vector3(0,0,3))
+  geometry.vertices.push (new THREE.Vector3(0,3,0))
+  
+  geometry.faces.push(new THREE.Face3(0, 3, 2));
+  geometry.faces.push(new THREE.Face3(0, 2, 1));
+  geometry.faces.push(new THREE.Face3(1, 3, 0));
+  geometry.faces.push(new THREE.Face3(1, 2, 3));
+	geometry.computeFaceNormals()
+	return new THREE.Mesh (geometry, 
+  //new THREE.MeshNormalMaterial());
+  new THREE.MeshBasicMaterial({color:'cyan', wireframe:true}))  
+}
+
+function agentMesh2 () {
+	// mesh facing +x
+	let geometry = new THREE.Geometry();
+  geometry.vertices.push (new THREE.Vector3(10,0,0))
+  geometry.vertices.push (new THREE.Vector3(0,0,-3))
+  geometry.vertices.push (new THREE.Vector3(0,0,3))
+  geometry.vertices.push (new THREE.Vector3(0,3,0))
+  
+  geometry.faces.push(new THREE.Face3(0, 3, 2));
+  geometry.faces.push(new THREE.Face3(0, 2, 1));
+  geometry.faces.push(new THREE.Face3(1, 3, 0));
+  geometry.faces.push(new THREE.Face3(1, 2, 3));
+	geometry.computeFaceNormals()
+	return new THREE.Mesh (geometry, 
+  //new THREE.MeshNormalMaterial());
+  new THREE.MeshBasicMaterial({color:'red', wireframe:true}))  
+}
+
+
+function init() {
+
+	renderer	= new THREE.WebGLRenderer({
+		// antialias	: true,
+		alpha: true
+	});
+	renderer.setClearColor(new THREE.Color('lightgrey'), 0)
+	// renderer.setPixelRatio( 1/2 );
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	renderer.domElement.style.position = 'absolute'
+	renderer.domElement.style.top = '0px'
+	renderer.domElement.style.left = '0px'
+	document.body.appendChild( renderer.domElement );
+
+	// init scene and camera
+	scene	= new THREE.Scene();
+	
+	//////////////////////////////////////////////////////////////////////////////////
+	//		Initialize a basic camera
+	//////////////////////////////////////////////////////////////////////////////////
+
+	// Create a camera
+	camera = new THREE.Camera();
+	scene.add(camera);
+
+	////////////////////////////////////////////////////////////////////////////////
+	//          handle arToolkitSource
+	////////////////////////////////////////////////////////////////////////////////
+
+	arToolkitSource = new THREEx.ArToolkitSource({
+		// to read from the webcam 
+		sourceType : 'webcam',
+
+		// to read from an image
+		// sourceType : 'image',
+		// sourceUrl : THREEx.ArToolkitContext.baseURL + '../data/images/img.jpg',		
+
+		// to read from a video
+		// sourceType : 'video',
+		// sourceUrl : THREEx.ArToolkitContext.baseURL + '../data/videos/headtracking.mp4',		
+	})
+
+	arToolkitSource.init(function onReady(){
+		onResize()
+	})
+	
+	// handle resize
+	window.addEventListener('resize', function(){
+		onResize()
+	})
+	////////////////////////////////////////////////////////////////////////////////
+	//          initialize arToolkitContext
+	////////////////////////////////////////////////////////////////////////////////
+	
+
+	// create atToolkitContext
+	arToolkitContext = new THREEx.ArToolkitContext({
+		cameraParametersUrl: THREEx.ArToolkitContext.baseURL + "GP/arneeded/camera_para.dat",
+		detectionMode: 'mono',
+		maxDetectionRate: 30,
+		canvasWidth: 80*3,
+		canvasHeight: 60*3,
+	})
+	// initialize it
+	arToolkitContext.init(function onCompleted(){
+		// copy projection matrix to camera
+		camera.projectionMatrix.copy( arToolkitContext.getProjectionMatrix() );
+	})
+	
+	////////////////////////////////////////////////////////////////////////////////
+	//          Create a ArMarkerControls
+	////////////////////////////////////////////////////////////////////////////////
+	
+	markerRoot = new THREE.Group
+	scene.add(markerRoot)
+	var artoolkitMarker = new THREEx.ArMarkerControls(arToolkitContext, markerRoot, {
+		type : 'pattern',
+		patternUrl : THREEx.ArToolkitContext.baseURL + "GP/arneeded/patt.hiro"
+		// patternUrl : THREEx.ArToolkitContext.baseURL + "https://qq87.github.io/GP/arneeded/patt.kanji"
+	})
+
+	// build a smoothedControls
+	smoothedRoot = new THREE.Group()
+	scene.add(smoothedRoot)
+	
+	smoothedControls = new THREEx.ArSmoothedControls(smoothedRoot, {
+		lerpPosition: 0.4,
+		lerpQuaternion: 0.3,
+		lerpScale: 1,
+	})
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//		add an object in the scene
+	//////////////////////////////////////////////////////////////////////////////////
+
+	/*let arWorldRoot = smoothedRoot
+	
+	// add a torus knot	
+	let geometry	= new THREE.CubeGeometry(1,1,1);
+	let material	= new THREE.MeshNormalMaterial({
+		transparent : true,
+		opacity: 0.5,
+		side: THREE.DoubleSide
+	}); 
+	let mesh	= new THREE.Mesh( geometry, material );
+	mesh.position.y	= geometry.parameters.height/2
+	arWorldRoot.add( mesh );
+	
+	geometry	= new THREE.TorusKnotGeometry(0.3,0.1,64,16);
+	material	= new THREE.MeshNormalMaterial(); 
+	mesh	= new THREE.Mesh( geometry, material );
+	mesh.position.y	= 0.5
+	arWorldRoot.add( mesh );
+
+	stats = new Stats();
+	document.body.appendChild( stats.dom );*/
+  
+  plane = new THREE.Mesh(new THREE.PlaneGeometry(240, 240), new THREE.MeshBasicMaterial({
+    transparent: true,
+    opacity: 0.5,
+    visible: true
+  }));
+  scene.add(plane);
+  plane.rotation.x = -Math.PI / 2;
+  let loader = new THREE.TextureLoader();
+  loader.crossOrigin = ""
+  let tex = loader.load ("https://i.imgur.com/GmthNU8.png");
+  target = new THREE.Mesh(new THREE.CircleGeometry(10,20), new THREE.MeshBasicMaterial({
+    map: tex,
+    transparent:true
+	 }));
+  scene.add(target);
+  target.rotation.x = -Math.PI/2
+
+  
+  target2 = new THREE.Mesh(new THREE.CircleGeometry(10,20), new THREE.MeshBasicMaterial({
+    map: tex,
+    transparent:true
+	 }));
+  scene.add(target2);
+  target2.rotation.x = -Math.PI/2
+  
+
+//  tex2 = loader.load ("https://i.imgur.com/HBZ38p5.jpg")
+//  scene.background = tex2
+
+	raycaster = new THREE.Raycaster();
+  document.addEventListener('mousedown', onDocumentMouseDown, false);
+  ////////////////////////
+		let mesh = agentMesh ();
+    agent = new Agent(new THREE.Vector3(-100 + 200 * Math.random(), 0, -100 + 200 * Math.random()), mesh);
+    scene.add(mesh)
+    
+  	let mesh2 = agentMesh2 ();
+    agent2 = new Agent2(new THREE.Vector3(-100 + 200 * Math.random(), 0, -100 + 200 * Math.random()), mesh2);
+    scene.add(mesh2)
+//    pdControl = new PDControllerR2();
+
+	obs[obsize++] = new Obstacle (new THREE.Vector3(50,0,50), 20)
+  obs[obsize++] = new Obstacle (new THREE.Vector3(-50,0,50), 20)
+  obs[obsize++] = new Obstacle (new THREE.Vector3(-50,0,-50), 20)
+  obs[obsize++] = new Obstacle (new THREE.Vector3(50,0,-50), 20)
+  ob = obs[0];
+  
+}
+
+function onDocumentMouseDown(event) {
+
+  event.preventDefault();
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  // find intersections
+  raycaster.setFromCamera(mouse, camera);
+  var intersects = raycaster.intersectObjects(pickables);
+  if (intersects.length > 0) {
+    target.position.copy(intersects[0].point);
+    target.position.y = 0.15
+    agent.setTarget(intersects[0].point)
+    
+    target2.position.copy(intersects[0].point);
+    target2.position.y = 0.15
+    agent2.setTarget(intersects[0].point)
+  }
+
+}
+
+
+
+function animate() {
+
+	requestAnimationFrame (animate);
+	renderer.render (scene, camera);
+	stats.update();
+	
+	if( arToolkitSource.ready === false )	return
+
+	arToolkitContext.update( arToolkitSource.domElement )
+
+	/*smoothedControls.update (markerRoot)
+	smoothedRoot.children[1].rotation.x += 0.1;*/
+  
+  
+ agent.randomtarget();
+ agent.mostthread();
+ agent.update(0.01); 
+ 
+ agent2.randomtarget();
+ agent2.mostthread();
+ agent2.update(0.01); 
+  
+  
+  
+  
+	
+}
+	
+</script></body>
