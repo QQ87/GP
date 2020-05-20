@@ -85,7 +85,7 @@ function init() {
 
 	// create atToolkitContext
 	arToolkitContext = new THREEx.ArToolkitContext({
-		cameraParametersUrl: THREEx.ArToolkitContext.baseURL + "https://qq87.github.io/GP/arneeded/camera_para.dat",
+		cameraParametersUrl: THREEx.ArToolkitContext.baseURL + "GP/arneeded/camera_para.dat",
 		detectionMode: 'mono',
 		maxDetectionRate: 30,
 		canvasWidth: 80*3,
@@ -105,7 +105,7 @@ function init() {
 	scene.add(markerRoot)
 	var artoolkitMarker = new THREEx.ArMarkerControls(arToolkitContext, markerRoot, {
 		type : 'pattern',
-		patternUrl : THREEx.ArToolkitContext.baseURL + "https://qq87.github.io/GP/arneeded/patt.hiro"
+		patternUrl : THREEx.ArToolkitContext.baseURL + "GP/arneeded/patt.hiro"
 		// patternUrl : THREEx.ArToolkitContext.baseURL + "https://qq87.github.io/GP/arneeded/patt.kanji"
 	})
 
