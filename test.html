@@ -19,7 +19,7 @@
 var renderer, scene, camera, stats;
 var arToolkitSource, arToolkitContext;
 var smoothedControls, markerRoot, smoothedRoot;
-let arWorldRoot = smoothedRoot;
+
 
 class Obstacle {
 	constructor (center,size) {
@@ -28,9 +28,9 @@ class Obstacle {
 			new THREE.MeshBasicMaterial());
 		this.mesh.position.copy (center);
 		this.size = size;
-    this.mesh.position.y = 1/20;
-    //scene.add (this.mesh)
-    arWorldRoot.add( this.mesh );
+    //this.mesh.position.y = 1/20;
+    scene.add (this.mesh)
+    //arWorldRoot.add( this.mesh );
 	}
   
 }
