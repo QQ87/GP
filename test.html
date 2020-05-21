@@ -466,7 +466,7 @@ function init() {
 
 	stats = new Stats();
 	document.body.appendChild( stats.dom );*/
-  
+  plane = new THREE.Group()
   plane = new THREE.Mesh(new THREE.PlaneGeometry(240/240, 240/240), new THREE.MeshBasicMaterial({
     transparent: true,
     opacity: 0.5,
@@ -477,6 +477,7 @@ function init() {
   let loader = new THREE.TextureLoader();
   loader.crossOrigin = ""
   let tex = loader.load ("https://i.imgur.com/GmthNU8.png");
+  target = new THREE.Group()
   target = new THREE.Mesh(new THREE.CircleGeometry(10/240,20/240), new THREE.MeshBasicMaterial({
     map: tex,
     transparent:true
@@ -484,7 +485,7 @@ function init() {
   scene.add(target);
   target.rotation.x = -Math.PI/2
 
-  
+  target2 = new THREE.Group()
   target2 = new THREE.Mesh(new THREE.CircleGeometry(10/240,20/240), new THREE.MeshBasicMaterial({
     map: tex,
     transparent:true
@@ -500,10 +501,12 @@ function init() {
  // document.addEventListener('mousedown', onDocumentMouseDown, false);
   ////////////////////////
 let mesh = agentMesh ();
+    agent = new THREE.Group()
     agent = new Agent(new THREE.Vector3((-100/240 + 200/240 * Math.random()), 0, (-100/240 + 200/240 * Math.random())), mesh);
     scene.add(mesh)
     
   	let mesh2 = agentMesh2 ();
+    agent2 = new THREE.Group()
     agent2 = new Agent2(new THREE.Vector3((-100/240 + 200/240 * Math.random()), 0, (-100/240 + 200/240 * Math.random())), mesh2);
     scene.add(mesh2)
 //    pdControl = new PDControllerR2();
