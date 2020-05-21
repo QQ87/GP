@@ -445,10 +445,10 @@ function init() {
 	//		add an object in the scene
 	//////////////////////////////////////////////////////////////////////////////////
 
-	/*let arWorldRoot = smoothedRoot
+	let arWorldRoot = smoothedRoot
 	
 	// add a torus knot	
-	let geometry	= new THREE.CubeGeometry(1,1,1);
+	/*let geometry	= new THREE.CubeGeometry(1,1,1);
 	let material	= new THREE.MeshNormalMaterial({
 		transparent : true,
 		opacity: 0.5,
@@ -462,10 +462,10 @@ function init() {
 	material	= new THREE.MeshNormalMaterial(); 
 	mesh	= new THREE.Mesh( geometry, material );
 	mesh.position.y	= 0.5
-	arWorldRoot.add( mesh );
+	arWorldRoot.add( mesh );*/
 
 	stats = new Stats();
-	document.body.appendChild( stats.dom );*/
+	document.body.appendChild( stats.dom );
   plane = new THREE.Group()
   plane = new THREE.Mesh(new THREE.PlaneGeometry(240/240, 240/240), new THREE.MeshBasicMaterial({
     transparent: true,
@@ -552,8 +552,8 @@ function animate() {
 
 	arToolkitContext.update( arToolkitSource.domElement )
 
-	/*smoothedControls.update (markerRoot)
-	smoothedRoot.children[1].rotation.x += 0.1;*/
+	smoothedControls.update (markerRoot)
+	//smoothedRoot.children[1].rotation.x += 0.1;
   
   
  agent.randomtarget();
