@@ -23,7 +23,7 @@ var smoothedControls, markerRoot, smoothedRoot;
 class Obstacle {
 	constructor (center,size) {
 		this.center = center.clone();  
-		this.mesh = new THREE.Mesh (new THREE.CylinderGeometry(size,size,1,20),
+		this.mesh = new THREE.Mesh (new THREE.CylinderGeometry(size,size,1/240,20),
 			new THREE.MeshBasicMaterial());
 		this.mesh.position.copy (center);
 		this.size = size;
@@ -65,7 +65,7 @@ const K = 7
 			perp.setLength (K*overlap);
 			perp.negate()
       this.force.add (perp);
-			console.log ("hit:", perp);
+			//console.log ("hit:", perp);
 		}
 	}
   
@@ -120,7 +120,7 @@ const K = 7
   	return proj;
   }
   randomtarget(){
-	if((agent.target.clone().sub(agent.pos)).length() < 1){
+	if((agent.target.clone().sub(agent.pos)).length() < 1/240){
   	 tarx = (Math.random()*240-120)/240;
   	 tary = (Math.random()*240-120)/240;
   	 var vectar = new THREE.Vector3( tarx, 0, tary );
@@ -193,7 +193,7 @@ const K = 7
 			perp.setLength (K*overlap);
 			perp.negate()
       this.force.add (perp);
-			console.log ("hit:", perp);
+			//console.log ("hit:", perp);
 		}
 	}
   
@@ -248,7 +248,7 @@ const K = 7
   	return proj;
   }
   randomtarget(){
-	if((agent2.target.clone().sub(agent2.pos)).length() < 1){
+	if((agent2.target.clone().sub(agent2.pos)).length() < 1/240){
   	 tarx2 = (Math.random()*240-120)/240;
   	 tary2 = (Math.random()*240-120)/240;
   	 var vectar = new THREE.Vector3( tarx2, 0, tary2 );
@@ -500,11 +500,11 @@ function init() {
  // document.addEventListener('mousedown', onDocumentMouseDown, false);
   ////////////////////////
 let mesh = agentMesh ();
-    agent = new Agent(new THREE.Vector3((-10 + 20 * Math.random()), 0, (-10 + 20 * Math.random())), mesh);
+    agent = new Agent(new THREE.Vector3((-100/240 + 200/240 * Math.random()), 0, (-100/240 + 200/240 * Math.random())), mesh);
     scene.add(mesh)
     
   	let mesh2 = agentMesh2 ();
-    agent2 = new Agent2(new THREE.Vector3(-10 + 20 * Math.random(), 0, -10 + 20 * Math.random()), mesh2);
+    agent2 = new Agent2(new THREE.Vector3((-100/240 + 200/240 * Math.random()), 0, (-100/240 + 200/240 * Math.random())), mesh2);
     scene.add(mesh2)
 //    pdControl = new PDControllerR2();
 
