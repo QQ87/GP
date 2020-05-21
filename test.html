@@ -23,11 +23,13 @@ var smoothedControls, markerRoot, smoothedRoot;
 class Obstacle {
 	constructor (center,size) {
 		this.center = center.clone();  
-		this.mesh = new THREE.Mesh (new THREE.CylinderGeometry(size,size,1/240,20),
+		this.mesh = new THREE.Mesh (new THREE.CylinderGeometry(size,size,1/10,20),
 			new THREE.MeshBasicMaterial());
 		this.mesh.position.copy (center);
 		this.size = size;
-    scene.add (this.mesh)
+    this.mesh.position.y = 1/20;
+    //scene.add (this.mesh)
+    arWorldRoot.add( this.mesh );
 	}
   
 }
@@ -516,7 +518,7 @@ let mesh = agentMesh ();
     arWorldRoot.add( mesh2 );
 //    pdControl = new PDControllerR2();
 
-	obs[obsize++] = new Obstacle (new THREE.Vector3(50/240,0,50/240), 20/240)
+  obs[obsize++] = new Obstacle (new THREE.Vector3(50/240,0,50/240), 20/240)
   obs[obsize++] = new Obstacle (new THREE.Vector3(-50/240,0,50/240), 20/240)
   obs[obsize++] = new Obstacle (new THREE.Vector3(-50/240,0,-50/240), 20/240)
   obs[obsize++] = new Obstacle (new THREE.Vector3(50/240,0,-50/240), 20/240)
